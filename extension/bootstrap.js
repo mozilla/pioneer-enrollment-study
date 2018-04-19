@@ -8,6 +8,8 @@ XPCOMUtils.defineLazyModuleGetter(this, "config",
   "resource://pioneer-enrollment-study/Config.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
   "resource:///modules/RecentWindow.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "BrowserWindowTracker",
+  "resource:///modules/BrowserWindowTracker.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "AboutPages",
   "resource://pioneer-enrollment-study-content/AboutPages.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "AddonManager",
@@ -90,10 +92,19 @@ function showNotification(doc, onClickButton) {
 }
 
 function getMostRecentBrowserWindow() {
-  return RecentWindow.getMostRecentBrowserWindow({
-    private: false,
-    allowPopups: false,
-  });
+  // Attempt to use newer BrowserWindowTracker API, and fallback to older
+  // RecentWindow API if that fails.
+  try {
+    return BrowserWindowTracker.getTopWindow({
+      private: false,
+      allowPopups: false,
+    });
+  } catch (err) {
+    return RecentWindow.getMostRecentBrowserWindow({
+      private: false,
+      allowPopups: false,
+    });
+  }
 }
 
 function getEnrollmentState() {
